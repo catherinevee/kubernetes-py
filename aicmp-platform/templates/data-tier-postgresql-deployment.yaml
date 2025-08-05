@@ -1,0 +1,79 @@
+{{- if and .Values.dataTier.enabled .Values.dataTier.postgresql.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" . }}-postgresql
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "postgresql"
+spec:
+  replicas: {{ .Values.dataTier.postgresql.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "postgresql"
+  template:
+    metadata:
+      labels:
+        {{- include "common.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: "postgresql"
+    spec:
+      {{- if .Values.dataTier.postgresql.securityContext }}
+      securityContext:
+        {{- toYaml .Values.dataTier.postgresql.securityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: postgresql
+          image: "{{ .Values.dataTier.postgresql.image.repository }}:{{ .Values.dataTier.postgresql.image.tag }}"
+          imagePullPolicy: {{ .Values.dataTier.postgresql.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+          {{- if .Values.dataTier.postgresql.env }}
+          env:
+            {{- toYaml .Values.dataTier.postgresql.env | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.postgresql.resources }}
+          resources:
+            {{- toYaml .Values.dataTier.postgresql.resources | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.postgresql.livenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.dataTier.postgresql.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.postgresql.readinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.dataTier.postgresql.readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.postgresql.volumeMounts }}
+          volumeMounts:
+            {{- toYaml .Values.dataTier.postgresql.volumeMounts | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.postgresql.securityContext }}
+          securityContext:
+            {{- toYaml .Values.dataTier.postgresql.securityContext | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dataTier.postgresql.volumes }}
+      volumes:
+        {{- toYaml .Values.dataTier.postgresql.volumes | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dataTier.postgresql.persistence.enabled }}
+      volumes:
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: {{ include "common.fullname" . }}-postgresql-pvc
+      {{- end }}
+      {{- if .Values.dataTier.postgresql.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.dataTier.postgresql.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dataTier.postgresql.affinity }}
+      affinity:
+        {{- toYaml .Values.dataTier.postgresql.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dataTier.postgresql.tolerations }}
+      tolerations:
+        {{- toYaml .Values.dataTier.postgresql.tolerations | nindent 8 }}
+      {{- end }}
+{{- end }} 

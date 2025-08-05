@@ -1,0 +1,19 @@
+{{- if .Values.kubectlCost.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "common.fullname" . }}-kubectl-cost-reports
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "kubectl-cost"
+  annotations:
+    {{- include "common.annotations" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp3
+{{- end }} 

@@ -1,0 +1,19 @@
+{{- if .Values.aiService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aicmp-platform.fullname" . }}-ai-service
+  labels:
+    {{- include "aicmp-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "ai-service"
+spec:
+  type: {{ .Values.aiService.service.type }}
+  ports:
+  - port: {{ .Values.aiService.service.port }}
+    targetPort: {{ .Values.aiService.service.targetPort }}
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "aicmp-platform.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: "ai-service"
+{{- end }} 

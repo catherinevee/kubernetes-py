@@ -1,0 +1,11 @@
+{{- if .Values.contentService.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.fullname" . }}-content-service-config
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "content-service"
+data:
+  {{- toYaml .Values.contentService.configMap.data | nindent 2 }}
+{{- end }} 

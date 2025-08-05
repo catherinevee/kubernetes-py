@@ -1,0 +1,207 @@
+# =============================================================================
+# CUSTOM DIAGRAM CONFIGURATION EXAMPLE
+# =============================================================================
+# Custom Kubernetes architecture diagrams using KubeDiagrams for the microservices application
+
+# Custom clusters to organize the diagram
+clusters:
+  - name: "AWS Cloud"
+    label: "Amazon Web Services"
+  
+  - name: "EKS Cluster"
+    label: "Amazon EKS Cluster"
+    parent: "AWS Cloud"
+  
+  - name: "Application Namespace"
+    label: "Microservices Application"
+    parent: "EKS Cluster"
+  
+  - name: "Monitoring Stack"
+    label: "Observability & Monitoring"
+    parent: "EKS Cluster"
+
+# Custom nodes to add context
+nodes:
+  # External components
+  - name: "Internet"
+    label: "Internet Users"
+    cluster: "AWS Cloud"
+  
+  - name: "AWS WAF"
+    label: "AWS WAF (Web Application Firewall)"
+    cluster: "AWS Cloud"
+  
+  - name: "ALB"
+    label: "Application Load Balancer"
+    cluster: "AWS Cloud"
+  
+  - name: "Route53"
+    label: "Route 53 DNS"
+    cluster: "AWS Cloud"
+  
+  # AWS services
+  - name: "ECR"
+    label: "Elastic Container Registry"
+    cluster: "AWS Cloud"
+  
+  - name: "S3"
+    label: "S3 Storage (Backups)"
+    cluster: "AWS Cloud"
+  
+  - name: "KMS"
+    label: "KMS (Secrets Encryption)"
+    cluster: "AWS Cloud"
+
+# Custom edges to show relationships
+edges:
+  # External traffic flow
+  - from: "Internet"
+    to: "Route53"
+    label: "DNS Resolution"
+  
+  - from: "Route53"
+    to: "ALB"
+    label: "Traffic Routing"
+  
+  - from: "ALB"
+    to: "AWS WAF"
+    label: "Security Check"
+  
+  - from: "AWS WAF"
+    to: "web-tier"
+    label: "Filtered Traffic"
+  
+  # Application flow
+  - from: "web-tier"
+    to: "app-tier"
+    label: "API Requests"
+  
+  - from: "app-tier"
+    to: "postgresql"
+    label: "Database Queries"
+  
+  - from: "app-tier"
+    to: "redis"
+    label: "Cache Operations"
+  
+  # Monitoring flow
+  - from: "app-tier"
+    to: "prometheus"
+    label: "Metrics Export"
+  
+  - from: "web-tier"
+    to: "prometheus"
+    label: "Metrics Export"
+  
+  - from: "postgresql"
+    to: "prometheus"
+    label: "Database Metrics"
+  
+  - from: "redis"
+    to: "prometheus"
+    label: "Cache Metrics"
+  
+  # Backup flow
+  - from: "postgresql"
+    to: "S3"
+    label: "Database Backups"
+  
+  - from: "app-tier"
+    to: "S3"
+    label: "Application Backups"
+  
+  # Security flow
+  - from: "app-tier"
+    to: "KMS"
+    label: "Secrets Decryption"
+  
+  - from: "postgresql"
+    to: "KMS"
+    label: "Database Encryption"
+  
+  # Container registry
+  - from: "web-tier"
+    to: "ECR"
+    label: "Image Pull"
+  
+  - from: "app-tier"
+    to: "ECR"
+    label: "Image Pull"
+
+# Custom styling for better visualization
+styles:
+  # Cluster styling
+  - selector: "cluster"
+    style:
+      fill: "#f8f9fa"
+      stroke: "#dee2e6"
+      stroke-width: 2
+  
+  # Node styling by type
+  - selector: "node[cluster='AWS Cloud']"
+    style:
+      fill: "#ff9900"
+      stroke: "#e47911"
+  
+  - selector: "node[cluster='EKS Cluster']"
+    style:
+      fill: "#326ce5"
+      stroke: "#1f4e79"
+  
+  - selector: "node[cluster='Application Namespace']"
+    style:
+      fill: "#28a745"
+      stroke: "#1e7e34"
+  
+  - selector: "node[cluster='Monitoring Stack']"
+    style:
+      fill: "#6f42c1"
+      stroke: "#5a2d91"
+  
+  # Edge styling by type
+  - selector: "edge[label*='Security']"
+    style:
+      stroke: "#dc3545"
+      stroke-width: 3
+  
+  - selector: "edge[label*='Backup']"
+    style:
+      stroke: "#fd7e14"
+      stroke-width: 2
+  
+  - selector: "edge[label*='Metrics']"
+    style:
+      stroke: "#6f42c1"
+      stroke-width: 2
+
+# Custom layout settings
+layout:
+  # Use hierarchical layout for better organization
+  type: "hierarchical"
+  direction: "TB"
+  spacing: 50
+  
+  # Cluster layout
+  clusters:
+    - name: "AWS Cloud"
+      position: [0, 0]
+      size: [800, 200]
+    
+    - name: "EKS Cluster"
+      position: [0, 250]
+      size: [800, 400]
+    
+    - name: "Application Namespace"
+      position: [50, 300]
+      size: [300, 300]
+    
+    - name: "Monitoring Stack"
+      position: [450, 300]
+      size: [300, 300]
+
+# Export settings
+export:
+  format: "svg"
+  filename: "microservices-architecture"
+  include-metadata: true
+  watermark: false 

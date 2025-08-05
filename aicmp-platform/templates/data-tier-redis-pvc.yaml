@@ -1,0 +1,18 @@
+{{- if and .Values.dataTier.enabled .Values.dataTier.redis.enabled .Values.dataTier.redis.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "common.fullname" . }}-redis-pvc
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "redis"
+spec:
+  accessModes:
+    - {{ .Values.dataTier.redis.persistence.accessMode | default "ReadWriteOnce" }}
+  {{- if .Values.dataTier.redis.persistence.storageClass }}
+  storageClassName: {{ .Values.dataTier.redis.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.dataTier.redis.persistence.size | default "5Gi" }}
+{{- end }} 

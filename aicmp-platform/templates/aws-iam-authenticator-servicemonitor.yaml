@@ -1,0 +1,32 @@
+{{- if and .Values.awsIamAuthenticator.enabled .Values.awsIamAuthenticator.monitoring.enabled .Values.awsIamAuthenticator.monitoring.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "common.fullname" . }}-aws-iam-authenticator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "aws-iam-authenticator"
+    {{- if .Values.monitoring.prometheus.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.monitoring.prometheus.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "aws-iam-authenticator"
+  endpoints:
+  - port: metrics
+    interval: {{ .Values.awsIamAuthenticator.monitoring.serviceMonitor.interval }}
+    scrapeTimeout: {{ .Values.awsIamAuthenticator.monitoring.serviceMonitor.scrapeTimeout }}
+    path: {{ .Values.awsIamAuthenticator.monitoring.serviceMonitor.path }}
+    honorLabels: true
+    metricRelabelings:
+    - sourceLabels: [__name__]
+      regex: 'aws_iam_authenticator_(.+)'
+      targetLabel: __name__
+      replacement: 'aws_iam_authenticator_$1'
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+{{- end }} 

@@ -1,0 +1,38 @@
+{{- if and .Values.cdnTier.enabled .Values.cdnTier.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "common.fullname" . }}-cdn-tier
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "cdn-tier"
+  annotations:
+    {{- toYaml .Values.cdnTier.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.cdnTier.ingress.className }}
+  {{- if .Values.cdnTier.ingress.tls }}
+  tls:
+    {{- range .Values.cdnTier.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.cdnTier.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "common.fullname" $ }}-cdn-tier
+                port:
+                  number: {{ $.Values.cdnTier.service.port }}
+          {{- end }}
+    {{- end }}
+{{- end }} 

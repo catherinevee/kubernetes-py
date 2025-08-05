@@ -1,0 +1,19 @@
+{{- if .Values.contentService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aicmp-platform.fullname" . }}-content-service
+  labels:
+    {{- include "aicmp-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "content-service"
+spec:
+  type: {{ .Values.contentService.service.type }}
+  ports:
+  - port: {{ .Values.contentService.service.port }}
+    targetPort: {{ .Values.contentService.service.targetPort }}
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "aicmp-platform.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: "content-service"
+{{- end }} 

@@ -1,0 +1,3 @@
+{{- if .Values.cdnTier.enabled }}
+{{- include "common.deployment" (dict "root" . "component" "cdn-tier" "container" .Values.cdnTier) }}
+{{- end }} 

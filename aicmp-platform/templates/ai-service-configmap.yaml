@@ -1,0 +1,74 @@
+{{- if .Values.aiService.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aicmp-platform.fullname" . }}-ai-service-config
+  labels:
+    {{- include "aicmp-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "ai-service"
+data:
+  ai.config.json: |
+    {
+      "ai": {
+        "openai": {
+          "model": "gpt-4",
+          "maxTokens": 2000,
+          "temperature": 0.7,
+          "timeout": 30000
+        },
+        "aws": {
+          "comprehend": {
+            "region": "{{ .Values.aiService.env.AWS_COMPREHEND_REGION }}",
+            "languageCodes": ["en", "es", "fr", "de", "it", "pt"],
+            "maxBatchSize": 25
+          },
+          "rekognition": {
+            "region": "{{ .Values.aiService.env.AWS_COMPREHEND_REGION }}",
+            "maxLabels": 10,
+            "minConfidence": 70
+          }
+        },
+        "features": {
+          "contentGeneration": {
+            "enabled": true,
+            "templates": ["blog", "social", "email", "landing"]
+          },
+          "sentimentAnalysis": {
+            "enabled": true,
+            "threshold": 0.6
+          },
+          "imageRecognition": {
+            "enabled": true,
+            "autoTagging": true
+          },
+          "seoOptimization": {
+            "enabled": true,
+            "keywordDensity": 0.02,
+            "maxKeywords": 10
+          },
+          "plagiarismDetection": {
+            "enabled": true,
+            "threshold": 0.8
+          }
+        }
+      },
+      "api": {
+        "port": {{ .Values.aiService.service.targetPort }},
+        "rateLimit": 100,
+        "timeout": 60000,
+        "cors": {
+          "allowedOrigins": ["*"],
+          "allowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+          "allowedHeaders": ["Content-Type", "Authorization"]
+        }
+      },
+      "logging": {
+        "level": "info",
+        "format": "json"
+      },
+      "cache": {
+        "redisUrl": "redis://{{ include "aicmp-platform.fullname" . }}-redis:{{ .Values.dataTier.redis.service.port }}",
+        "ttl": 3600
+      }
+    }
+{{- end }} 

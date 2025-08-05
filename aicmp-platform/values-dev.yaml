@@ -1,0 +1,125 @@
+# =============================================================================
+# DEVELOPMENT ENVIRONMENT OVERRIDES
+# =============================================================================
+# This file contains development-specific overrides for the microservices application.
+# Development environment focuses on cost optimization and developer productivity.
+
+# Global overrides
+global:
+  environment: "development"
+
+# AWS IAM Authenticator - Simplified for development
+awsIamAuthenticator:
+  enabled: true
+  deployment:
+    replicaCount: 1  # Single replica for development
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "64Mi"
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+  monitoring:
+    enabled: false  # Disable monitoring in development
+  security:
+    networkPolicies:
+      enabled: false  # Disable network policies for easier debugging
+
+# Kubectl-cost - Disabled for development to reduce complexity
+kubectlCost:
+  enabled: false  # Disable cost monitoring in development
+
+# Web tier overrides
+webTier:
+  replicaCount: 1
+  ingress:
+    enabled: false  # No external ingress in development
+  autoscaling:
+    enabled: false  # No autoscaling in development
+
+# Application tier overrides
+appTier:
+  replicaCount: 1
+  autoscaling:
+    enabled: false  # No autoscaling in development
+
+# Data tier overrides
+dataTier:
+  postgresql:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
+    persistence:
+      size: "10Gi"
+  
+  redis:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+    persistence:
+      size: "5Gi"
+
+# Monitoring overrides
+monitoring:
+  enabled: false  # Disable monitoring in development
+  prometheus:
+    enabled: false
+  grafana:
+    enabled: false
+
+# Karpenter overrides
+karpenter:
+  enabled: false  # No autoscaling in development
+
+# Network policies overrides
+networkPolicies:
+  enabled: false  # Disable network policies for easier debugging
+
+# RBAC overrides
+rbac:
+  enabled: true  # Keep RBAC for security
+
+# Secrets overrides
+secrets:
+  enabled: true  # Keep secrets for functionality
+
+# Backup overrides
+backup:
+  enabled: false  # No backup in development
+
+# Cost optimization overrides
+costOptimization:
+  enabled: true
+  resourceQuotas:
+    enabled: true
+    cpu: "4"
+    memory: "8Gi"
+    persistentVolumeClaims: "5"
+    services: "10"
+    servicesLoadBalancers: "2"
+    servicesNodePorts: "5"
+  limitRanges:
+    enabled: true
+    default:
+      cpu: "200m"
+      memory: "256Mi"
+    defaultRequest:
+      cpu: "50m"
+      memory: "64Mi"
+    max:
+      cpu: "2"
+      memory: "4Gi"
+    min:
+      cpu: "25m"
+      memory: "32Mi" 

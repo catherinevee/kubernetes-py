@@ -1,0 +1,3 @@
+{{- if .Values.contentService.enabled }}
+{{- include "common.service" (dict "root" . "component" "content-service" "service" .Values.contentService.service) }}
+{{- end }} 

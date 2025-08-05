@@ -1,0 +1,51 @@
+{{- if and .Values.kubectlCost.enabled .Values.kubectlCost.rbac.create }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.kubectlCost.serviceAccount.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "kubectl-cost"
+  annotations:
+    {{- include "common.annotations" . | nindent 4 }}
+    {{- with .Values.kubectlCost.serviceAccount.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "common.fullname" . }}-kubectl-cost
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "kubectl-cost"
+rules:
+{{- range .Values.kubectlCost.rbac.rules }}
+  - apiGroups: {{ .apiGroups | toYaml | nindent 4 }}
+    resources: {{ .resources | toYaml | nindent 4 }}
+    {{- if .resourceNames }}
+    resourceNames: {{ .resourceNames | toYaml | nindent 4 }}
+    {{- end }}
+    verbs: {{ .verbs | toYaml | nindent 4 }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "common.fullname" . }}-kubectl-cost
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "kubectl-cost"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "common.fullname" . }}-kubectl-cost
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.kubectlCost.serviceAccount.name }}
+  namespace: {{ .Release.Namespace }}
+{{- end }} 

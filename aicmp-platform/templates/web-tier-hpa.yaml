@@ -1,0 +1,40 @@
+{{- if and .Values.cdnTier.enabled .Values.cdnTier.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "common.fullname" . }}-cdn-tier
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "cdn-tier"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "common.fullname" . }}-cdn-tier
+  minReplicas: {{ .Values.cdnTier.autoscaling.minReplicas | default 1 }}
+  maxReplicas: {{ .Values.cdnTier.autoscaling.maxReplicas | default 10 }}
+  metrics:
+    {{- if .Values.cdnTier.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.cdnTier.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.cdnTier.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.cdnTier.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.cdnTier.autoscaling.customMetrics }}
+    {{- toYaml .Values.cdnTier.autoscaling.customMetrics | nindent 4 }}
+    {{- end }}
+  {{- if .Values.cdnTier.autoscaling.behavior }}
+  behavior:
+    {{- toYaml .Values.cdnTier.autoscaling.behavior | nindent 4 }}
+  {{- end }}
+{{- end }} 

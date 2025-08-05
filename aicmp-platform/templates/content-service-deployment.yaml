@@ -1,0 +1,59 @@
+{{- if .Values.contentService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aicmp-platform.fullname" . }}-content-service
+  labels:
+    {{- include "aicmp-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "content-service"
+spec:
+  replicas: {{ .Values.contentService.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aicmp-platform.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "content-service"
+  template:
+    metadata:
+      labels:
+        {{- include "aicmp-platform.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: "content-service"
+      annotations:
+        {{- include "aicmp-platform.annotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "aicmp-platform.fullname" . }}-content-service
+      securityContext:
+        {{- toYaml .Values.contentService.securityContext | nindent 8 }}
+      containers:
+      - name: content-service
+        image: "{{ .Values.global.imageRegistry }}/{{ .Values.contentService.image.repository }}:{{ .Values.contentService.image.tag }}"
+        imagePullPolicy: {{ .Values.contentService.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.contentService.service.targetPort }}
+          protocol: TCP
+        env:
+        {{- range .Values.contentService.env }}
+        - name: {{ .name }}
+          {{- if .value }}
+          value: {{ .value | quote }}
+          {{- end }}
+          {{- if .valueFrom }}
+          valueFrom:
+            {{- toYaml .valueFrom | nindent 12 }}
+          {{- end }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.contentService.resources | nindent 10 }}
+        livenessProbe:
+          {{- toYaml .Values.contentService.livenessProbe | nindent 10 }}
+        readinessProbe:
+          {{- toYaml .Values.contentService.readinessProbe | nindent 10 }}
+        volumeMounts:
+        - name: content-config
+          mountPath: /app/config
+          readOnly: true
+      volumes:
+      - name: content-config
+        configMap:
+          name: {{ include "aicmp-platform.fullname" . }}-content-service-config
+{{- end }} 

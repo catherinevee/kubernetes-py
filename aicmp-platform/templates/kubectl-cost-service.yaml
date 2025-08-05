@@ -1,0 +1,29 @@
+{{- if .Values.kubectlCost.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.fullname" . }}-kubectl-cost
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "kubectl-cost"
+  annotations:
+    {{- include "common.annotations" . | nindent 4 }}
+    {{- with .Values.kubectlCost.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.kubectlCost.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.kubectlCost.service.port }}
+    targetPort: {{ .Values.kubectlCost.service.targetPort }}
+    protocol: TCP
+  - name: metrics
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    {{- include "common.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: "kubectl-cost"
+{{- end }} 

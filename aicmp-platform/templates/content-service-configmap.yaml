@@ -1,0 +1,58 @@
+{{- if .Values.contentService.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aicmp-platform.fullname" . }}-content-service-config
+  labels:
+    {{- include "aicmp-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "content-service"
+data:
+  app.config.json: |
+    {
+      "content": {
+        "maxFileSize": "100MB",
+        "allowedTypes": [
+          "image/*",
+          "video/*",
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ],
+        "storage": {
+          "s3Bucket": "{{ .Values.dataTier.s3.bucket.name }}",
+          "s3Region": "{{ .Values.dataTier.s3.bucket.region }}",
+          "imagePath": "{{ .Values.dataTier.s3.mediaStorage.imageUploadPath }}",
+          "videoPath": "{{ .Values.dataTier.s3.mediaStorage.videoUploadPath }}",
+          "documentPath": "{{ .Values.dataTier.s3.mediaStorage.documentUploadPath }}"
+        },
+        "search": {
+          "elasticsearchUrl": "http://{{ include "aicmp-platform.fullname" . }}-elasticsearch:{{ .Values.dataTier.elasticsearch.service.port }}",
+          "indexName": "content"
+        },
+        "database": {
+          "url": "postgresql://{{ .Values.dataTier.postgresql.env.POSTGRES_USER }}:{{ .Values.dataTier.postgresql.env.POSTGRES_PASSWORD }}@{{ include "aicmp-platform.fullname" . }}-postgresql:{{ .Values.dataTier.postgresql.service.port }}/{{ .Values.dataTier.postgresql.env.POSTGRES_DB }}",
+          "poolSize": 10,
+          "timeout": 30000
+        },
+        "cache": {
+          "redisUrl": "redis://{{ include "aicmp-platform.fullname" . }}-redis:{{ .Values.dataTier.redis.service.port }}",
+          "maxRetries": 3,
+          "retryDelay": 1000
+        }
+      },
+      "api": {
+        "port": {{ .Values.contentService.service.targetPort }},
+        "rateLimit": 1000,
+        "timeout": 30000,
+        "cors": {
+          "allowedOrigins": ["*"],
+          "allowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+          "allowedHeaders": ["Content-Type", "Authorization"]
+        }
+      },
+      "logging": {
+        "level": "info",
+        "format": "json"
+      }
+    }
+{{- end }} 

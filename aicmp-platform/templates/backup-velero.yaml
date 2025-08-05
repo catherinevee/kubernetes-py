@@ -1,0 +1,51 @@
+{{- if and .Values.backup.enabled .Values.backup.velero.enabled }}
+---
+# Velero Backup Schedule
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: {{ include "common.fullname" . }}-backup-schedule
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.backup.velero.schedule | quote }}
+  template:
+    includedNamespaces:
+      - {{ .Release.Namespace }}
+    includedResources:
+      - deployments
+      - services
+      - configmaps
+      - secrets
+      - persistentvolumeclaims
+      - persistentvolumes
+    storageLocation: {{ .Values.backup.velero.storageLocation | default "default" }}
+    volumeSnapshotLocations:
+      - {{ .Values.backup.velero.volumeSnapshotLocation | default "default" }}
+    ttl: {{ .Values.backup.velero.retention | default "720h" }}
+---
+# Velero Backup for Database
+{{- if .Values.backup.database.enabled }}
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: {{ include "common.fullname" . }}-database-backup-schedule
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.backup.database.schedule | quote }}
+  template:
+    includedNamespaces:
+      - {{ .Release.Namespace }}
+    includedResources:
+      - persistentvolumeclaims
+      - persistentvolumes
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/component: "postgresql"
+    storageLocation: {{ .Values.backup.velero.storageLocation | default "default" }}
+    volumeSnapshotLocations:
+      - {{ .Values.backup.velero.volumeSnapshotLocation | default "default" }}
+    ttl: {{ .Values.backup.database.retention | default "168h" }}
+{{- end }}
+{{- end }} 

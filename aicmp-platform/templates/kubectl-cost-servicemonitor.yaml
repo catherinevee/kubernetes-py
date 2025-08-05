@@ -1,0 +1,32 @@
+{{- if and .Values.kubectlCost.enabled .Values.kubectlCost.monitoring.enabled .Values.kubectlCost.monitoring.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "common.fullname" . }}-kubectl-cost
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "kubectl-cost"
+    {{- if .Values.monitoring.prometheus.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.monitoring.prometheus.serviceMonitor.additionalLabels | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "kubectl-cost"
+  endpoints:
+  - port: metrics
+    interval: {{ .Values.kubectlCost.monitoring.serviceMonitor.interval }}
+    scrapeTimeout: {{ .Values.kubectlCost.monitoring.serviceMonitor.scrapeTimeout }}
+    path: {{ .Values.kubectlCost.monitoring.serviceMonitor.path }}
+    honorLabels: true
+    metricRelabelings:
+    - sourceLabels: [__name__]
+      regex: 'kubectl_cost_(.+)'
+      targetLabel: __name__
+      replacement: 'kubectl_cost_$1'
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+{{- end }} 

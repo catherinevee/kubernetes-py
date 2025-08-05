@@ -1,0 +1,68 @@
+{{- if and .Values.awsIamAuthenticator.enabled .Values.awsIamAuthenticator.security.networkPolicies.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "common.fullname" . }}-aws-iam-authenticator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "aws-iam-authenticator"
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "aws-iam-authenticator"
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  {{- range .Values.awsIamAuthenticator.security.networkPolicies.ingress }}
+    - from:
+    {{- range .from }}
+      {{- if .namespaceSelector }}
+      - namespaceSelector:
+          matchLabels:
+      {{- range $key, $value := .namespaceSelector.matchLabels }}
+            {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if .podSelector }}
+      - podSelector:
+          matchLabels:
+      {{- range $key, $value := .podSelector.matchLabels }}
+            {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+    {{- end }}
+      ports:
+    {{- range .ports }}
+        - protocol: {{ .protocol }}
+          port: {{ .port }}
+    {{- end }}
+  {{- end }}
+  egress:
+  {{- range .Values.awsIamAuthenticator.security.networkPolicies.egress }}
+    - to:
+    {{- range .to }}
+      {{- if .namespaceSelector }}
+      - namespaceSelector:
+          matchLabels:
+      {{- range $key, $value := .namespaceSelector.matchLabels }}
+            {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if .podSelector }}
+      - podSelector:
+          matchLabels:
+      {{- range $key, $value := .podSelector.matchLabels }}
+            {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+    {{- end }}
+      ports:
+    {{- range .ports }}
+        - protocol: {{ .protocol }}
+          port: {{ .port }}
+    {{- end }}
+  {{- end }}
+{{- end }} 

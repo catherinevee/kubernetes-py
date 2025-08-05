@@ -1,0 +1,19 @@
+{{- if .Values.dataTier.elasticsearch.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aicmp-platform.fullname" . }}-elasticsearch
+  labels:
+    {{- include "aicmp-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "elasticsearch"
+spec:
+  type: {{ .Values.dataTier.elasticsearch.service.type }}
+  ports:
+  - port: {{ .Values.dataTier.elasticsearch.service.port }}
+    targetPort: {{ .Values.dataTier.elasticsearch.service.targetPort }}
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "aicmp-platform.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: "elasticsearch"
+{{- end }} 

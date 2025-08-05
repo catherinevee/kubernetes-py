@@ -1,0 +1,63 @@
+{{- if .Values.dataTier.elasticsearch.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aicmp-platform.fullname" . }}-elasticsearch
+  labels:
+    {{- include "aicmp-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "elasticsearch"
+spec:
+  replicas: {{ .Values.dataTier.elasticsearch.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aicmp-platform.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "elasticsearch"
+  template:
+    metadata:
+      labels:
+        {{- include "aicmp-platform.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: "elasticsearch"
+      annotations:
+        {{- include "aicmp-platform.annotations" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.dataTier.elasticsearch.securityContext | nindent 8 }}
+      containers:
+      - name: elasticsearch
+        image: "{{ .Values.dataTier.elasticsearch.image.repository }}:{{ .Values.dataTier.elasticsearch.image.tag }}"
+        imagePullPolicy: {{ .Values.dataTier.elasticsearch.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.dataTier.elasticsearch.service.targetPort }}
+          protocol: TCP
+        env:
+        {{- range .Values.dataTier.elasticsearch.env }}
+        - name: {{ .name }}
+          value: {{ .value | quote }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.dataTier.elasticsearch.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: {{ .Values.dataTier.elasticsearch.service.targetPort }}
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: {{ .Values.dataTier.elasticsearch.service.targetPort }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: elasticsearch-data
+          mountPath: /usr/share/elasticsearch/data
+      volumes:
+      - name: elasticsearch-data
+        persistentVolumeClaim:
+          claimName: {{ include "aicmp-platform.fullname" . }}-elasticsearch-pvc
+{{- end }} 

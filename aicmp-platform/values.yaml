@@ -1,0 +1,76 @@
+# AICMP Platform Configuration
+# Override with environment-specific files: values-dev.yaml, values-staging.yaml, values-prod.yaml
+
+# Global Configuration
+global:
+  appName: "aicmp-platform"
+  environment: "development"
+
+  aws:
+    region: "us-west-2"
+    accountId: "123456789012"
+
+  imageRegistry: "123456789012.dkr.ecr.us-west-2.amazonaws.com"
+  imagePullSecrets:
+  - name: "ecr-registry-secret"
+
+  labels:
+    app.kubernetes.io/name: "aicmp-platform"
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
+    app.kubernetes.io/component: "content-management"
+    app.kubernetes.io/part-of: "aicmp-platform"
+    app.kubernetes.io/managed-by: "helm"
+
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+
+# AWS IAM Authenticator
+awsIamAuthenticator:
+  enabled: true
+
+  config:
+    clusterID: "aicmp-cluster"
+
+    server:
+      port: 21362
+      stateDir: "/var/aws-iam-authenticator"
+      generateKubeconfig: "/etc/kubernetes/aws-iam-authenticator/kubeconfig"
+
+    mapRoles:
+    - roleARN: "arn:aws:iam::123456789012:role/EKSClusterAdminRole"
+      username: "admin:{{SessionName}}"
+      groups:
+      - "system:masters"
+
+    - roleARN: "arn:aws:iam::123456789012:role/EKSDeveloperRole"
+      username: "developer:{{SessionName}}"
+      groups:
+      - "developers"
+      - "system:authenticated"
+
+    - roleARN: "arn:aws:iam::123456789012:role/EKSCICDRole"
+      username: "cicd:{{SessionName}}"
+      groups:
+      - "cicd"
+      - "system:authenticated"
+
+    - roleARN: "arn:aws:iam::123456789012:role/EKSReadOnlyRole"
+      username: "readonly:{{SessionName}}"
+      groups:
+      - "readonly"
+      - "system:authenticated"
+
+    mapUsers:
+    - userARN: "arn:aws:iam::123456789012:user/admin-user"
+      username: "admin-user"
+      groups:
+      - "system:masters"
+
+    - userARN: "arn:aws:iam::123456789012:user/developer-user"
+      username: "developer-user"
+      groups:
+      - "developers"
+      - "system:authenticated"

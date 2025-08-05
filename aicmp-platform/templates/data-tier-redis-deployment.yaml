@@ -1,0 +1,79 @@
+{{- if and .Values.dataTier.enabled .Values.dataTier.redis.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" . }}-redis
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "redis"
+spec:
+  replicas: {{ .Values.dataTier.redis.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "redis"
+  template:
+    metadata:
+      labels:
+        {{- include "common.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: "redis"
+    spec:
+      {{- if .Values.dataTier.redis.securityContext }}
+      securityContext:
+        {{- toYaml .Values.dataTier.redis.securityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: redis
+          image: "{{ .Values.dataTier.redis.image.repository }}:{{ .Values.dataTier.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.dataTier.redis.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+          {{- if .Values.dataTier.redis.env }}
+          env:
+            {{- toYaml .Values.dataTier.redis.env | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.redis.resources }}
+          resources:
+            {{- toYaml .Values.dataTier.redis.resources | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.redis.livenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.dataTier.redis.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.redis.readinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.dataTier.redis.readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.redis.volumeMounts }}
+          volumeMounts:
+            {{- toYaml .Values.dataTier.redis.volumeMounts | nindent 12 }}
+          {{- end }}
+          {{- if .Values.dataTier.redis.securityContext }}
+          securityContext:
+            {{- toYaml .Values.dataTier.redis.securityContext | nindent 12 }}
+          {{- end }}
+      {{- if .Values.dataTier.redis.volumes }}
+      volumes:
+        {{- toYaml .Values.dataTier.redis.volumes | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dataTier.redis.persistence.enabled }}
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: {{ include "common.fullname" . }}-redis-pvc
+      {{- end }}
+      {{- if .Values.dataTier.redis.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.dataTier.redis.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dataTier.redis.affinity }}
+      affinity:
+        {{- toYaml .Values.dataTier.redis.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.dataTier.redis.tolerations }}
+      tolerations:
+        {{- toYaml .Values.dataTier.redis.tolerations | nindent 8 }}
+      {{- end }}
+{{- end }} 

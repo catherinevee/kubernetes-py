@@ -1,0 +1,74 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "common.fullname" . }}-alerts
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "monitoring"
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: microservices-app.rules
+      rules:
+        # High CPU usage alert
+        - alert: HighCPUUsage
+          expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage detected"
+            description: "CPU usage is above 80% for more than 5 minutes"
+            
+        # High memory usage alert
+        - alert: HighMemoryUsage
+          expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory usage detected"
+            description: "Memory usage is above 85% for more than 5 minutes"
+            
+        # Pod restart alert
+        - alert: PodRestarting
+          expr: increase(kube_pod_container_status_restarts_total[15m]) > 0
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod is restarting"
+            description: "Pod {{ $labels.pod }} is restarting frequently"
+            
+        # Service down alert
+        - alert: ServiceDown
+          expr: up == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Service is down"
+            description: "Service {{ $labels.service }} is down"
+            
+        # Database connection alert
+        - alert: DatabaseConnectionFailed
+          expr: pg_up == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Database connection failed"
+            description: "PostgreSQL database is not accessible"
+            
+        # Redis connection alert
+        - alert: RedisConnectionFailed
+          expr: redis_up == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Redis connection failed"
+            description: "Redis cache is not accessible"
+{{- end }} 

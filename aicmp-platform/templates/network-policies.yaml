@@ -1,0 +1,94 @@
+{{- if .Values.networkPolicies.enabled }}
+---
+# Default deny all ingress/egress
+{{- if .Values.networkPolicies.defaultDeny.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "common.fullname" . }}-default-deny
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress: []
+---
+{{- end }}
+# Web tier network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "common.fullname" . }}-web-tier-policy
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "web-tier"
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "web-tier"
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    {{- if .Values.networkPolicies.webTier.ingress }}
+    {{- toYaml .Values.networkPolicies.webTier.ingress | nindent 4 }}
+    {{- end }}
+  egress:
+    {{- if .Values.networkPolicies.webTier.egress }}
+    {{- toYaml .Values.networkPolicies.webTier.egress | nindent 4 }}
+    {{- end }}
+---
+# App tier network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "common.fullname" . }}-app-tier-policy
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "app-tier"
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "app-tier"
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    {{- if .Values.networkPolicies.appTier.ingress }}
+    {{- toYaml .Values.networkPolicies.appTier.ingress | nindent 4 }}
+    {{- end }}
+  egress:
+    {{- if .Values.networkPolicies.appTier.egress }}
+    {{- toYaml .Values.networkPolicies.appTier.egress | nindent 4 }}
+    {{- end }}
+---
+# Data tier network policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "common.fullname" . }}-data-tier-policy
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "data-tier"
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "postgresql"
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    {{- if .Values.networkPolicies.dataTier.ingress }}
+    {{- toYaml .Values.networkPolicies.dataTier.ingress | nindent 4 }}
+    {{- end }}
+  egress:
+    {{- if .Values.networkPolicies.dataTier.egress }}
+    {{- toYaml .Values.networkPolicies.dataTier.egress | nindent 4 }}
+    {{- end }}
+{{- end }} 

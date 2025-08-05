@@ -1,0 +1,20 @@
+{{- if and .Values.cdnTier.enabled .Values.cdnTier.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "common.fullname" . }}-cdn-tier
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "cdn-tier"
+spec:
+  {{- if .Values.cdnTier.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.cdnTier.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if .Values.cdnTier.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.cdnTier.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "cdn-tier"
+{{- end }} 

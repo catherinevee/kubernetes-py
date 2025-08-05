@@ -1,0 +1,51 @@
+{{- if and .Values.awsIamAuthenticator.enabled .Values.awsIamAuthenticator.rbac.create }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.awsIamAuthenticator.serviceAccount.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "aws-iam-authenticator"
+  annotations:
+    {{- include "common.annotations" . | nindent 4 }}
+    {{- with .Values.awsIamAuthenticator.serviceAccount.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "common.fullname" . }}-aws-iam-authenticator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "aws-iam-authenticator"
+rules:
+{{- range .Values.awsIamAuthenticator.rbac.rules }}
+  - apiGroups: {{ .apiGroups | toYaml | nindent 4 }}
+    resources: {{ .resources | toYaml | nindent 4 }}
+    {{- if .resourceNames }}
+    resourceNames: {{ .resourceNames | toYaml | nindent 4 }}
+    {{- end }}
+    verbs: {{ .verbs | toYaml | nindent 4 }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "common.fullname" . }}-aws-iam-authenticator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "aws-iam-authenticator"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "common.fullname" . }}-aws-iam-authenticator
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.awsIamAuthenticator.serviceAccount.name }}
+  namespace: {{ .Release.Namespace }}
+{{- end }} 

@@ -1,0 +1,29 @@
+{{- if .Values.awsIamAuthenticator.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.fullname" . }}-aws-iam-authenticator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "aws-iam-authenticator"
+  annotations:
+    {{- include "common.annotations" . | nindent 4 }}
+    {{- with .Values.awsIamAuthenticator.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: {{ .Values.awsIamAuthenticator.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.awsIamAuthenticator.service.port }}
+    targetPort: {{ .Values.awsIamAuthenticator.service.targetPort }}
+    protocol: TCP
+  - name: metrics
+    port: 21362
+    targetPort: 21362
+    protocol: TCP
+  selector:
+    {{- include "common.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: "aws-iam-authenticator"
+{{- end }} 

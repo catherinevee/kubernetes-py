@@ -1,0 +1,63 @@
+{{- if .Values.costOptimization.enabled }}
+---
+# Resource Quotas
+{{- if .Values.costOptimization.resourceQuotas.enabled }}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ include "common.fullname" . }}-resource-quota
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  hard:
+    {{- if .Values.costOptimization.resourceQuotas.cpu }}
+    requests.cpu: {{ .Values.costOptimization.resourceQuotas.cpu }}
+    limits.cpu: {{ .Values.costOptimization.resourceQuotas.cpu }}
+    {{- end }}
+    {{- if .Values.costOptimization.resourceQuotas.memory }}
+    requests.memory: {{ .Values.costOptimization.resourceQuotas.memory }}
+    limits.memory: {{ .Values.costOptimization.resourceQuotas.memory }}
+    {{- end }}
+    {{- if .Values.costOptimization.resourceQuotas.persistentVolumeClaims }}
+    persistentvolumeclaims: {{ .Values.costOptimization.resourceQuotas.persistentVolumeClaims }}
+    {{- end }}
+    {{- if .Values.costOptimization.resourceQuotas.services }}
+    services: {{ .Values.costOptimization.resourceQuotas.services }}
+    {{- end }}
+    {{- if .Values.costOptimization.resourceQuotas.servicesLoadBalancers }}
+    services.loadbalancers: {{ .Values.costOptimization.resourceQuotas.servicesLoadBalancers }}
+    {{- end }}
+    {{- if .Values.costOptimization.resourceQuotas.servicesNodePorts }}
+    services.nodeports: {{ .Values.costOptimization.resourceQuotas.servicesNodePorts }}
+    {{- end }}
+---
+{{- end }}
+# Limit Ranges
+{{- if .Values.costOptimization.limitRanges.enabled }}
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: {{ include "common.fullname" . }}-limit-range
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  limits:
+    - type: Container
+      {{- if .Values.costOptimization.limitRanges.default }}
+      default:
+        {{- toYaml .Values.costOptimization.limitRanges.default | nindent 8 }}
+      {{- end }}
+      {{- if .Values.costOptimization.limitRanges.defaultRequest }}
+      defaultRequest:
+        {{- toYaml .Values.costOptimization.limitRanges.defaultRequest | nindent 8 }}
+      {{- end }}
+      {{- if .Values.costOptimization.limitRanges.max }}
+      max:
+        {{- toYaml .Values.costOptimization.limitRanges.max | nindent 8 }}
+      {{- end }}
+      {{- if .Values.costOptimization.limitRanges.min }}
+      min:
+        {{- toYaml .Values.costOptimization.limitRanges.min | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }} 

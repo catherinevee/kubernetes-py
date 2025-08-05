@@ -1,0 +1,16 @@
+{{- if .Values.dataTier.elasticsearch.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "aicmp-platform.fullname" . }}-elasticsearch-pvc
+  labels:
+    {{- include "aicmp-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "elasticsearch"
+spec:
+  accessModes:
+    - {{ .Values.dataTier.elasticsearch.persistence.accessMode }}
+  storageClassName: {{ .Values.dataTier.elasticsearch.persistence.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.dataTier.elasticsearch.persistence.size }}
+{{- end }} 

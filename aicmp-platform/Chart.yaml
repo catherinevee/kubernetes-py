@@ -1,0 +1,45 @@
+apiVersion: v2
+name: aicmp-platform
+description: AI-Powered Content Management Platform for multi-channel content creation, publishing, and analytics
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+- ai
+- content-management
+- publishing
+- analytics
+- aws
+- eks
+- production
+- monitoring
+home: https://github.com/your-org/aicmp-platform
+sources:
+- https://github.com/your-org/aicmp-platform
+maintainers:
+- name: DevOps Team
+  email: devops@yourcompany.com
+dependencies:
+- name: common
+  version: 1.0.0
+  repository: file://charts/common
+- name: prometheus
+  version: 25.0.0
+  repository: https://prometheus-community.github.io/helm-charts
+  condition: monitoring.enabled
+- name: grafana
+  version: 7.0.0
+  repository: https://grafana.github.io/helm-charts
+  condition: monitoring.enabled
+- name: karpenter
+  version: 0.35.0
+  repository: https://charts.karpenter.sh
+  condition: karpenter.enabled
+- name: elasticsearch
+  version: 8.0.0
+  repository: https://helm.elastic.co
+  condition: elasticsearch.enabled
+kubeVersion: ">=1.24.0"
+annotations:
+  category: Application
+  licenses: Apache-2.0

@@ -1,0 +1,44 @@
+# =============================================================================
+# GITIGNORE FOR MICROSERVICES APPLICATION HELM CHART
+# =============================================================================
+
+# Helm generated files
+charts/
+*.tgz
+.helmignore
+
+# KubeDiagrams generated files
+diagrams/*.svg
+diagrams/*.png
+diagrams/*.dot
+diagrams/*.dot_json
+diagrams/helm-templates-*/
+diagrams/custom-*.kd
+
+# Keep directory structure
+!diagrams/.gitkeep
+!diagrams/interactive-viewer/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test artifacts
+test-results/
+coverage/ 

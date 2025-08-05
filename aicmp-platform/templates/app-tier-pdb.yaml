@@ -1,0 +1,20 @@
+{{- if and .Values.contentService.enabled .Values.contentService.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "common.fullname" . }}-content-service
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "content-service"
+spec:
+  {{- if .Values.contentService.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.contentService.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if .Values.contentService.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.contentService.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: "content-service"
+{{- end }} 

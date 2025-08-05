@@ -1,0 +1,182 @@
+# =============================================================================
+# STAGING ENVIRONMENT OVERRIDES
+# =============================================================================
+# This file contains staging-specific overrides for the microservices application.
+# Staging environment provides a production-like setup for testing.
+
+# Global overrides
+global:
+  environment: "staging"
+
+# AWS IAM Authenticator - Production-like for staging
+awsIamAuthenticator:
+  enabled: true
+  deployment:
+    replicaCount: 2  # High availability for staging
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+  monitoring:
+    enabled: true  # Enable monitoring in staging
+  security:
+    networkPolicies:
+      enabled: true  # Enable network policies for security testing
+
+# Kubectl-cost - Basic cost monitoring for staging
+kubectlCost:
+  enabled: true
+  deployment:
+    replicaCount: 1  # Single replica for staging
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "64Mi"
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+  reporting:
+    alerts:
+      thresholds:
+        dailySpend: 50  # Lower threshold for staging
+        weeklySpend: 200
+        monthlySpend: 800
+  optimization:
+    recommendations:
+      resources:
+        cpu:
+          minUtilization: 30  # Lower thresholds for staging
+          maxUtilization: 70
+        memory:
+          minUtilization: 30
+          maxUtilization: 70
+
+# Web tier overrides
+webTier:
+  replicaCount: 2
+  ingress:
+    enabled: true
+    hosts:
+    - host: "staging-app.yourdomain.com"
+      paths:
+      - path: "/"
+        pathType: "Prefix"
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+
+# Application tier overrides
+appTier:
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+
+# Data tier overrides
+dataTier:
+  postgresql:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+      limits:
+        cpu: "1000m"
+        memory: "2Gi"
+    persistence:
+      size: "50Gi"
+  
+  redis:
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    persistence:
+      size: "10Gi"
+
+# Monitoring overrides
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    retention: "7d"
+    storage:
+      size: "25Gi"
+  grafana:
+    enabled: true
+    persistence:
+      size: "5Gi"
+
+# Karpenter overrides
+karpenter:
+  enabled: true
+  nodePools:
+  - name: "staging"
+    spec:
+      requirements:
+      - key: "node.kubernetes.io/instance-type"
+        operator: "In"
+        values: [ "t3.medium", "t3.large", "m5.large" ]
+      - key: "topology.kubernetes.io/zone"
+        operator: "In"
+        values: [ "us-west-2a", "us-west-2b" ]
+      limits:
+        cpu: "50"
+        memory: "200Gi"
+
+# Network policies overrides
+networkPolicies:
+  enabled: true
+
+# RBAC overrides
+rbac:
+  enabled: true
+
+# Secrets overrides
+secrets:
+  enabled: true
+
+# Backup overrides
+backup:
+  enabled: true
+  velero:
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    retention: "7d"
+  database:
+    schedule: "0 1 * * *"  # Daily at 1 AM
+    retention: "3d"
+
+# Cost optimization overrides
+costOptimization:
+  enabled: true
+  resourceQuotas:
+    enabled: true
+    cpu: "10"
+    memory: "20Gi"
+    persistentVolumeClaims: "8"
+    services: "15"
+    servicesLoadBalancers: "3"
+    servicesNodePorts: "8"
+  limitRanges:
+    enabled: true
+    default:
+      cpu: "300m"
+      memory: "384Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "128Mi"
+    max:
+      cpu: "3"
+      memory: "6Gi"
+    min:
+      cpu: "50m"
+      memory: "64Mi" 
